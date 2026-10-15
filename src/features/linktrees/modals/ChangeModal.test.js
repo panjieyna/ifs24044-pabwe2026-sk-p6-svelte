@@ -144,4 +144,73 @@ describe("ChangeModal", () => {
 
     expect(closeSpy).toHaveBeenCalledTimes(3);
   });
+  it("should keep default values when the API returns no link tree", async () => {
+    const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockImplementation(() => {});
+    vi.spyOn(linkTreeApi, "getLinkTreeById").mockResolvedValue(null);
+
+    const { wrapper } = renderWithProviders(ChangeModal, {
+      props: { show: true, linkTreeId: 1 },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(wrapper.find('[data-testid="edit-linktree-title-input"]').element.value).toBe("");
+    expect(wrapper.find('[data-testid="edit-linktree-type-select"]').element.value).toBe("public");
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  it("should fall back to public type when the link tree has no type", async () => {
+    vi.spyOn(linkTreeApi, "getLinkTreeById").mockResolvedValue({
+      id: 1,
+      title: "No Type",
+      description: "Some description",
+    });
+
+    const { wrapper } = renderWithProviders(ChangeModal, {
+      props: { show: true, linkTreeId: 1 },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(wrapper.find('[data-testid="edit-linktree-title-input"]').element.value).toBe("No Type");
+    expect(wrapper.find('[data-testid="edit-linktree-type-select"]').element.value).toBe("public");
+  });
+
+  it("should submit the visibility type selected by the user", async () => {
+    vi.spyOn(linkTreeApi, "getLinkTreeById").mockResolvedValue(mockLinkTree);
+
+    const { wrapper, linkTreesStore } = renderWithProviders(ChangeModal, {
+      props: { show: true, linkTreeId: 1 },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    const typeSelect = wrapper.find('[data-testid="edit-linktree-type-select"]');
+    await typeSelect.setValue("unlisted");
+
+    const changeSpy = vi.spyOn(linkTreesStore, "asyncSetIsLinkTreeChange").mockImplementation(() => {});
+
+    const form = wrapper.find("form");
+    await form.trigger("submit");
+
+    expect(changeSpy).toHaveBeenCalledWith(1, "Existing Title", "unlisted", "Existing Description");
+  });
+
+  it("should stay open when the change finished without being marked as changed", async () => {
+    vi.spyOn(linkTreeApi, "getLinkTreeById").mockResolvedValue(mockLinkTree);
+    const closeSpy = vi.fn();
+
+    const { linkTreesStore } = renderWithProviders(ChangeModal, {
+      props: { show: true, linkTreeId: 1, onClose: closeSpy },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    linkTreesStore.setIsLinkTreeChanged(false);
+    linkTreesStore.setIsLinkTreeChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+    expect(linkTreesStore.$state.isLinkTreeChange).toBe(false);
+  });
 });

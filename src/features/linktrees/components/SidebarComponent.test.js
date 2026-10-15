@@ -78,4 +78,36 @@ describe("SidebarComponent", () => {
 
     await backdrop.trigger("keydown", { key: "Enter" });
   });
+
+  // Cover false branch of if (onCloseMobile)
+  it("should close mobile sidebar on backdrop click without onCloseMobile prop", async () => {
+    const { wrapper } = renderWithProviders(SidebarComponent, {
+      props: { isSidebarOpen: true },
+    });
+
+    const backdrop = wrapper.find('[data-testid="sidebar-backdrop"]');
+    expect(backdrop.exists()).toBe(true);
+    await backdrop.trigger("click");
+  });
+
+  it("should close mobile sidebar on Escape without onCloseMobile prop", async () => {
+    const { wrapper } = renderWithProviders(SidebarComponent, {
+      props: { isSidebarOpen: true },
+    });
+
+    const backdrop = wrapper.find('[data-testid="sidebar-backdrop"]');
+    await backdrop.trigger("keydown", { key: "Escape" });
+  });
+
+  it("should handle navigation without onCloseMobile prop", async () => {
+    const navSpy = vi.spyOn(routerModule, "navigate").mockImplementation(() => {});
+
+    const { wrapper } = renderWithProviders(SidebarComponent, {
+      props: { isSidebarOpen: true },
+    });
+
+    const profileLink = wrapper.find('a[href="/profile"]');
+    await profileLink.trigger("click");
+    expect(navSpy).toHaveBeenCalledWith("/profile");
+  });
 });

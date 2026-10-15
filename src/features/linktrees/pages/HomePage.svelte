@@ -1,4 +1,4 @@
-<script>
+  <script>
   import { onMount } from "svelte";
   import { navigate } from "../../../router.js";
   import AddModal from "../modals/AddModal.svelte";
@@ -245,7 +245,7 @@
               <!-- Links Count badge -->
               <div class="absolute top-3 right-3">
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-black/60 text-white backdrop-blur-xs shadow-xs">
-                  {lt.total_links ?? 0} tautan
+                  {String(lt.total_links ?? 0)} tautan
                 </span>
               </div>
             </div>
@@ -326,13 +326,11 @@
 <!-- Modals -->
 <AddModal
   show={showAddModal}
-  on:close={() => (showAddModal = false)}
   onClose={() => (showAddModal = false)}
 />
 
 <ChangeModal
   show={showChangeModal}
   linkTreeId={selectedLinkTreeId}
-  on:close={() => (showChangeModal = false)}
   onClose={() => (showChangeModal = false)}
 />

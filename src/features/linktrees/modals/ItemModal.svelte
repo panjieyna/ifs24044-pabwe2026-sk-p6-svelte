@@ -19,7 +19,7 @@
     title = "";
     url = "";
     dispatch("close");
-    if (onClose) onClose();
+    onClose?.();
   }
 
   $: {

@@ -133,4 +133,17 @@ describe("ChangeCoverModal", () => {
     });
     await fileInput.trigger("change");
   });
+  it("should stay open when cover change finished without being marked as changed", async () => {
+    const closeSpy = vi.fn();
+    const { linkTreesStore } = renderWithProviders(ChangeCoverModal, {
+      props: { show: true, linkTree: mockLinkTree, onClose: closeSpy },
+    });
+
+    linkTreesStore.setIsLinkTreeChangedCover(false);
+    linkTreesStore.setIsLinkTreeChangeCover(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+    expect(linkTreesStore.$state.isLinkTreeChangeCover).toBe(false);
+  });
 });

@@ -304,14 +304,12 @@
   <ChangeCoverModal
     show={showCoverModal}
     {linkTree}
-    on:close={() => (showCoverModal = false)}
     onClose={() => (showCoverModal = false)}
   />
 
   <ChangeModal
     show={showEditModal}
     linkTreeId={linkTree.id}
-    on:close={() => (showEditModal = false)}
     onClose={() => (showEditModal = false)}
   />
 
@@ -319,7 +317,6 @@
     show={showItemModal}
     linkTreeId={linkTree.id}
     item={selectedItem}
-    on:close={() => (showItemModal = false)}
     onClose={() => (showItemModal = false)}
   />
 {/if}

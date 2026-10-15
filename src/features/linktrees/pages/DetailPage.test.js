@@ -229,4 +229,198 @@ describe("DetailPage", () => {
 
     expect(navSpy).toHaveBeenCalledWith("/");
   });
+  it("should not fetch link tree on mount when linkTreeId is empty", () => {
+    const setSpy = vi.spyOn(linkTreesStore, "asyncSetLinkTree").mockImplementation(() => Promise.resolve());
+    setSpy.mockClear();
+
+    renderWithProviders(DetailPage, {
+      props: { linkTreeId: undefined },
+      preloadedState: { profile: mockProfile, linkTree: null },
+    });
+
+    expect(setSpy).not.toHaveBeenCalled();
+  });
+
+  it("should fetch the new link tree when linkTreeId prop changes", async () => {
+    const { rerender } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 10 },
+      preloadedState: { profile: mockProfile, linkTree: mockLinkTree },
+    });
+
+    const setSpy = vi.spyOn(linkTreesStore, "asyncSetLinkTree").mockImplementation(() => Promise.resolve());
+    setSpy.mockClear();
+
+    await rerender({ linkTreeId: 20 });
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(setSpy).toHaveBeenCalledWith(20);
+  });
+
+  it("should stay on the page when isLinkTree becomes true and link tree exists", async () => {
+    const navSpy = vi.spyOn(routerModule, "navigate").mockImplementation(() => {});
+
+    const { linkTreesStore: store } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 10 },
+      preloadedState: { profile: mockProfile, linkTree: mockLinkTree, isLinkTree: false },
+    });
+    navSpy.mockClear();
+
+    store.setIsLinkTree(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(navSpy).not.toHaveBeenCalled();
+    expect(store.$state.isLinkTree).toBe(false);
+  });
+
+  it("should close the cover modal through its onClose callback", async () => {
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 10 },
+      preloadedState: { profile: mockProfile, linkTree: mockLinkTree },
+    });
+
+    await wrapper.find('[data-testid="edit-cover-btn"]').trigger("click");
+    expect(wrapper.find('[data-testid="change-cover-modal"]').exists()).toBe(true);
+
+    await wrapper.find('[data-testid="close-cover-modal-btn"]').trigger("click");
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(wrapper.find('[data-testid="change-cover-modal"]').exists()).toBe(false);
+  });
+
+  it("should hide owner actions for a visitor who is not the owner", () => {
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 10 },
+      preloadedState: { profile: { id: 99, name: "Visitor" }, linkTree: mockLinkTree },
+    });
+
+    expect(wrapper.text()).toContain("Website");
+    expect(wrapper.find('[data-testid="edit-cover-btn"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="add-item-btn"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="edit-item-btn-1"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="delete-item-btn-1"]').exists()).toBe(false);
+  });
+
+  it("should render safely when description, items and author are missing", () => {
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 13 },
+      preloadedState: {
+        profile: mockProfile,
+        linkTree: {
+          id: 13,
+          user_id: 1,
+          title: "Sparse Tree",
+          type: "public",
+          cover: null,
+          created_at: "2025-01-01T00:00:00Z",
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Sparse Tree");
+    expect(wrapper.text()).toContain("Anonim");
+    expect(wrapper.text()).toContain("Belum ada tautan ditambahkan");
+    expect(wrapper.text()).toContain("Klik tombol di atas untuk menambahkan tautan pertama Anda.");
+  });
+
+  it("should show fallback initial U when author has no name and no photo", () => {
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 14 },
+      preloadedState: {
+        profile: mockProfile,
+        linkTree: { ...mockLinkTree, id: 14, author: {}, items: [] },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Anonim");
+    expect(wrapper.text()).toContain("U");
+  });
+  it("should react when ownership changes while items are displayed", async () => {
+    const { wrapper, usersStore } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 10 },
+      preloadedState: { profile: mockProfile, linkTree: mockLinkTree },
+    });
+
+    expect(wrapper.find('[data-testid="edit-item-btn-1"]').exists()).toBe(true);
+
+    usersStore.setProfile({ id: 99, name: "Visitor" });
+    await new Promise((r) => setTimeout(r, 10));
+    expect(wrapper.find('[data-testid="edit-item-btn-1"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="add-item-btn"]').exists()).toBe(false);
+
+    usersStore.setProfile(mockProfile);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(wrapper.find('[data-testid="edit-item-btn-1"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="add-item-btn"]').exists()).toBe(true);
+  });
+
+  it("should react when ownership changes while the list is empty", async () => {
+    const emptyTree = { ...mockLinkTree, id: 15, items: [] };
+    const { wrapper, usersStore } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 15 },
+      preloadedState: { profile: { id: 99, name: "Visitor" }, linkTree: emptyTree },
+    });
+
+    expect(wrapper.text()).toContain("Belum ada tautan ditambahkan");
+    expect(wrapper.text()).not.toContain("Klik tombol di atas");
+
+    usersStore.setProfile(mockProfile);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(wrapper.text()).toContain("Klik tombol di atas");
+
+    usersStore.setProfile({ id: 99, name: "Visitor" });
+    await new Promise((r) => setTimeout(r, 10));
+    expect(wrapper.text()).not.toContain("Klik tombol di atas");
+  });
+
+  it("should switch between empty state and item list when items change", async () => {
+    const { wrapper, linkTreesStore: store } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 10 },
+      preloadedState: { profile: mockProfile, linkTree: mockLinkTree },
+    });
+
+    store.setLinkTree({ ...mockLinkTree, items: [] });
+    await new Promise((r) => setTimeout(r, 10));
+    expect(wrapper.text()).toContain("Belum ada tautan ditambahkan");
+
+    store.setLinkTree(mockLinkTree);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(wrapper.text()).not.toContain("Belum ada tautan ditambahkan");
+    expect(wrapper.find('[data-testid="linktree-item-1"]').exists()).toBe(true);
+  });
+  it("should update rendered items in place when item data changes but ids stay the same", async () => {
+    const { wrapper, linkTreesStore: store } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 10 },
+      preloadedState: { profile: mockProfile, linkTree: mockLinkTree },
+    });
+
+    store.setLinkTree({
+      ...mockLinkTree,
+      items: mockLinkTree.items.map((item) => ({ ...item, title: `${item.title} v2` })),
+    });
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(wrapper.text()).toContain("Website v2");
+    expect(wrapper.text()).toContain("Docs v2");
+    expect(wrapper.find('[data-testid="linktree-item-1"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="edit-item-btn-1"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="delete-item-btn-2"]').exists()).toBe(true);
+  });
+  it("should render item controls with empty test ids when an item has no id", () => {
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 16 },
+      preloadedState: {
+        profile: mockProfile,
+        linkTree: {
+          ...mockLinkTree,
+          id: 16,
+          items: [{ title: "Tanpa ID", url: "https://noid.example.com" }],
+        },
+      },
+    });
+
+    expect(wrapper.text()).toContain("Tanpa ID");
+    expect(wrapper.find('[data-testid="linktree-item-"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="edit-item-btn-"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="delete-item-btn-"]').exists()).toBe(true);
+  });
 });

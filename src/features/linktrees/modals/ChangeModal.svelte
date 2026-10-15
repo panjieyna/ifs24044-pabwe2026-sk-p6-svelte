@@ -20,7 +20,7 @@
 
   function handleClose() {
     dispatch("close");
-    if (onClose) onClose();
+    onClose?.();
   }
 
   $: {

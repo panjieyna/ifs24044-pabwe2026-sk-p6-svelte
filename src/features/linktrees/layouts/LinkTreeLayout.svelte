@@ -11,7 +11,6 @@
 
   $: profile = $usersStore.profile;
 
-  // 1. Jalankan sekali untuk mengecek apakah pengguna sudah login
   onMount(() => {
     const authToken = apiHelper.getAccessToken();
     if (authToken) {
@@ -21,7 +20,6 @@
     }
   });
 
-  // 2. Jika proses pengambilan profil selesai dan tidak ada profile, arahkan ke login
   $: if ($usersStore.isProfile) {
     usersStore.setIsProfile(false);
     if (!profile) {
@@ -30,7 +28,6 @@
     }
   }
 
-  // 3. Efek setelah logout
   $: if ($authStore.isAuthLogout) {
     authStore.setIsAuthLogout(false);
     navigate("/auth/login");
@@ -38,6 +35,10 @@
 
   function handleLogout() {
     authStore.asyncSetIsAuthLogout();
+  }
+
+  function handleToggleSidebar() {
+    isSidebarOpen = !isSidebarOpen;
   }
 
   function handleCloseSidebar() {
@@ -58,15 +59,12 @@
       {profile}
       {isSidebarOpen}
       onLogout={handleLogout}
-      onToggleSidebar={() => (isSidebarOpen = !isSidebarOpen)}
-      on:logout={handleLogout}
-      on:toggle-sidebar={() => (isSidebarOpen = !isSidebarOpen)}
+      onToggleSidebar={handleToggleSidebar}
     />
 
     <SidebarComponent
       {isSidebarOpen}
       onCloseMobile={handleCloseSidebar}
-      on:close-mobile={handleCloseSidebar}
     />
 
     <main class="pt-16 md:pl-64 transition-all">

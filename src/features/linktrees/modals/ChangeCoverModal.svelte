@@ -18,7 +18,7 @@
     previewUrl = null;
     file = null;
     dispatch("close");
-    if (onClose) onClose();
+    onClose?.();
   }
 
   $: {

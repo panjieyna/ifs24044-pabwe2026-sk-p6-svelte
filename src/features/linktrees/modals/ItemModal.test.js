@@ -145,4 +145,40 @@ describe("ItemModal", () => {
 
     expect(closeSpy).toHaveBeenCalled();
   });
+  it("should fall back to empty title and url when item has no title or url", () => {
+    const { wrapper } = renderWithProviders(ItemModal, {
+      props: { show: true, linkTreeId: 1, item: { id: 11 } },
+    });
+
+    expect(wrapper.find('[data-testid="item-title-input"]').element.value).toBe("");
+    expect(wrapper.find('[data-testid="item-url-input"]').element.value).toBe("");
+  });
+
+  it("should stay open when item add finished without being marked as added", async () => {
+    const closeSpy = vi.fn();
+    const { linkTreesStore } = renderWithProviders(ItemModal, {
+      props: { show: true, linkTreeId: 1, item: null, onClose: closeSpy },
+    });
+
+    linkTreesStore.setIsItemAdded(false);
+    linkTreesStore.setIsItemAdd(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+    expect(linkTreesStore.$state.isItemAdd).toBe(false);
+  });
+
+  it("should stay open when item change finished without being marked as changed", async () => {
+    const closeSpy = vi.fn();
+    const { linkTreesStore } = renderWithProviders(ItemModal, {
+      props: { show: true, linkTreeId: 1, item: mockItem, onClose: closeSpy },
+    });
+
+    linkTreesStore.setIsItemChanged(false);
+    linkTreesStore.setIsItemChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+    expect(linkTreesStore.$state.isItemChange).toBe(false);
+  });
 });

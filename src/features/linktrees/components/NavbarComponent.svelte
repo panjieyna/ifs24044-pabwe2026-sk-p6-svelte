@@ -21,10 +21,10 @@
   let dropdownRef;
 
   function handleClickOutside(event) {
-    if (dropdownRef && !dropdownRef.contains(event.target)) {
-      dropdownOpen = false;
-    }
+  if (dropdownRef?.contains(event.target) === false) {
+    dropdownOpen = false;
   }
+}
 
   onMount(() => {
     document.addEventListener("mousedown", handleClickOutside);

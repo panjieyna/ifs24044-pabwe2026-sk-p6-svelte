@@ -3,6 +3,7 @@ import LinkTreeLayout from "./LinkTreeLayout.svelte";
 import { renderWithProviders } from "../../../test-utils";
 import apiHelper from "../../../helpers/apiHelper";
 import * as routerModule from "../../../router";
+import { usersStore as realUsersStore } from "../../users/states/usersStore";
 
 describe("LinkTreeLayout", () => {
   beforeEach(() => {
@@ -90,6 +91,7 @@ describe("LinkTreeLayout", () => {
 
   it("should toggle and close sidebar", async () => {
     vi.spyOn(apiHelper, "getAccessToken").mockReturnValue("valid-token");
+    vi.spyOn(realUsersStore, "asyncSetProfile").mockResolvedValue();
 
     const { wrapper } = renderWithProviders(LinkTreeLayout, {
       preloadedState: { profile: mockProfile },
@@ -105,5 +107,24 @@ describe("LinkTreeLayout", () => {
     await backdrop.trigger("click");
     await new Promise((r) => setTimeout(r, 10));
     expect(wrapper.find('[data-testid="sidebar-backdrop"]').exists()).toBe(false);
+  });
+  it("should keep the layout and not redirect when isProfile is true and profile exists", async () => {
+    vi.spyOn(apiHelper, "getAccessToken").mockReturnValue("valid-token");
+    const putTokenSpy = vi.spyOn(apiHelper, "putAccessToken").mockImplementation(() => {});
+    const navSpy = vi.spyOn(routerModule, "navigate").mockImplementation(() => {});
+    vi.spyOn(realUsersStore, "asyncSetProfile").mockResolvedValue();
+
+    const { wrapper, usersStore } = renderWithProviders(LinkTreeLayout, {
+      preloadedState: { profile: mockProfile },
+    });
+    navSpy.mockClear();
+
+    usersStore.setIsProfile(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(usersStore.isProfile).toBe(false);
+    expect(putTokenSpy).not.toHaveBeenCalled();
+    expect(navSpy).not.toHaveBeenCalledWith("/auth/login");
+    expect(wrapper.find('[data-testid="toggle-sidebar-btn"]').exists()).toBe(true);
   });
 });

@@ -291,4 +291,94 @@ describe("HomePage", () => {
 
     expect(wrapper.text()).toContain("Tidak ada link tree ditemukan");
   });
+  it("should render empty state when the store link trees value is null", async () => {
+    const { wrapper } = renderWithProviders(HomePage, {
+      preloadedState: {
+        profile: mockProfile,
+        linkTrees: null,
+      },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(wrapper.text()).toContain("Tidak ada link tree ditemukan");
+    expect(wrapper.text()).toContain("Mulai dengan menambahkan link tree baru.");
+  });
+
+  it("should show search hint in empty state when nothing matches the search query", async () => {
+    const { wrapper } = renderWithProviders(HomePage, {
+      preloadedState: {
+        profile: mockProfile,
+        linkTrees: mockLinkTrees,
+      },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    const searchInput = wrapper.find('[data-testid="search-input"]');
+    await searchInput.setValue("zzz-tidak-ada");
+
+    expect(wrapper.text()).toContain("Tidak ada link tree ditemukan");
+    expect(wrapper.text()).toContain("Coba ubah kata kunci pencarian Anda.");
+  });
+
+  it("should search safely on link trees without title, description, or author", async () => {
+    const sparse = [
+      { id: 201, user_id: 1, type: "public", created_at: "2025-01-01T00:00:00Z" },
+      { ...mockLinkTrees[0], id: 202, title: "Findable Tree" },
+    ];
+    const { wrapper } = renderWithProviders(HomePage, {
+      preloadedState: {
+        profile: mockProfile,
+        linkTrees: sparse,
+      },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    const searchInput = wrapper.find('[data-testid="search-input"]');
+    await searchInput.setValue("findable");
+
+    expect(wrapper.text()).toContain("Findable Tree");
+    expect(wrapper.find('[data-testid="linktree-card-201"]').exists()).toBe(false);
+  });
+
+  it("should render a card with default values when id and total_links are missing", async () => {
+    const { wrapper } = renderWithProviders(HomePage, {
+      preloadedState: {
+        profile: mockProfile,
+        linkTrees: [
+          { user_id: 1, title: "No Id Tree", type: "public", created_at: "2025-01-01T00:00:00Z" },
+        ],
+      },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(wrapper.text()).toContain("No Id Tree");
+    expect(wrapper.text()).toContain("0 tautan");
+    expect(wrapper.find('[data-testid="linktree-card-"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="detail-linktree-btn-"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="edit-linktree-btn-"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="delete-linktree-btn-"]').exists()).toBe(true);
+  });
+
+  it("should close the add modal through its onClose callback", async () => {
+    const { wrapper } = renderWithProviders(HomePage, {
+      preloadedState: {
+        profile: mockProfile,
+        linkTrees: [],
+      },
+    });
+
+    await new Promise((r) => setTimeout(r, 20));
+
+    await wrapper.find('[data-testid="add-linktree-btn"]').trigger("click");
+    expect(wrapper.find('[data-testid="add-linktree-modal"]').exists()).toBe(true);
+
+    await wrapper.find('[data-testid="close-add-modal-btn"]').trigger("click");
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(wrapper.find('[data-testid="add-linktree-modal"]').exists()).toBe(false);
+  });
 });
