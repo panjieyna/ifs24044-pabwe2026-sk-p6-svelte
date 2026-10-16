@@ -4,6 +4,7 @@ import { renderWithProviders } from "../../../test-utils";
 import * as routerModule from "../../../router";
 import * as toolsHelper from "../../../helpers/toolsHelper";
 import { linkTreesStore } from "../states/linkTreesStore";
+import linkTreeApi from "../api/linkTreeApi";
 
 describe("DetailPage", () => {
   const mockProfile = { id: 1, name: "Owner User" };
@@ -103,6 +104,24 @@ describe("DetailPage", () => {
     const editBtn = wrapper.find('[data-testid="edit-detail-linktree-btn"]');
     await editBtn.trigger("click");
     expect(wrapper.find('[data-testid="edit-linktree-modal"]').exists()).toBe(true);
+  });
+
+  it("should close the edit modal through its onClose callback", async () => {
+    // Jangan bergantung pada jaringan: data yang dimuat modal harus di-mock
+    vi.spyOn(linkTreeApi, "getLinkTreeById").mockResolvedValue(mockLinkTree);
+
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { linkTreeId: 10 },
+      preloadedState: { profile: mockProfile, linkTree: mockLinkTree },
+    });
+
+    await wrapper.find('[data-testid="edit-detail-linktree-btn"]').trigger("click");
+    expect(wrapper.find('[data-testid="edit-linktree-modal"]').exists()).toBe(true);
+
+    await wrapper.find('[data-testid="close-edit-modal-btn"]').trigger("click");
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(wrapper.find('[data-testid="edit-linktree-modal"]').exists()).toBe(false);
   });
 
   it("should delete link tree after confirmation", async () => {

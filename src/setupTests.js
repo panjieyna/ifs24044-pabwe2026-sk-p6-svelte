@@ -6,6 +6,11 @@ afterEach(() => {
   cleanup();
 });
 
+// Test tidak boleh memakai jaringan sungguhan: hasilnya akan bergantung pada
+// koneksi/server (lokal vs Jenkins) dan membuat coverage tidak stabil.
+// Request yang lupa di-mock langsung gagal dengan cara yang sama di semua lingkungan.
+globalThis.fetch = () => Promise.reject(new TypeError("Failed to fetch"));
+
 if (typeof document !== "undefined") {
   if (!document.elementFromPoint) {
     document.elementFromPoint = () => null;

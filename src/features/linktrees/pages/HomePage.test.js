@@ -4,6 +4,7 @@ import { renderWithProviders } from "../../../test-utils";
 import * as routerModule from "../../../router";
 import * as toolsHelper from "../../../helpers/toolsHelper";
 import { linkTreesStore } from "../states/linkTreesStore";
+import linkTreeApi from "../api/linkTreeApi";
 
 describe("HomePage", () => {
   const mockProfile = { id: 1, name: "User 1" };
@@ -125,7 +126,10 @@ describe("HomePage", () => {
     expect(navSpy).toHaveBeenCalledWith("/link-trees/101");
   });
 
-  it("should open edit modal when edit button is clicked", async () => {
+  it("should open edit modal when edit button is clicked and close it again", async () => {
+    // Jangan bergantung pada jaringan: data yang dimuat modal harus di-mock
+    vi.spyOn(linkTreeApi, "getLinkTreeById").mockResolvedValue(mockLinkTrees[0]);
+
     const { wrapper } = renderWithProviders(HomePage, {
       preloadedState: {
         profile: mockProfile,
@@ -139,6 +143,12 @@ describe("HomePage", () => {
     await editBtn.trigger("click");
 
     expect(wrapper.find('[data-testid="edit-linktree-modal"]').exists()).toBe(true);
+
+    // Menutup modal lewat tombol close memanggil onClose milik halaman
+    await wrapper.find('[data-testid="close-edit-modal-btn"]').trigger("click");
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(wrapper.find('[data-testid="edit-linktree-modal"]').exists()).toBe(false);
   });
 
   it("should open add modal when add button is clicked", async () => {
