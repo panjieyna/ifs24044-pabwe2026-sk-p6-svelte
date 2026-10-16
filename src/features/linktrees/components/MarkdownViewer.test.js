@@ -29,6 +29,11 @@ describe("MarkdownViewer", () => {
 
     expect(container.querySelector('[data-testid="markdown-viewer"]')).toBeTruthy();
 
+    // Viewer dimuat secara dinamis (lazy), tunggu sampai terbentuk
+    const ViewerMock = (await import("@toast-ui/editor/dist/toastui-editor-viewer")).default;
+    await vi.waitFor(() => expect(ViewerMock).toHaveBeenCalledTimes(1));
+    expect(ViewerMock.mock.calls[0][0]).toMatchObject({ initialValue: "Halo Dunia" });
+
     await rerender({ content: "Perubahan Markdown" });
     expect(mockSetMarkdown).toHaveBeenCalledWith("Perubahan Markdown");
 
@@ -39,9 +44,24 @@ describe("MarkdownViewer", () => {
     expect(mockDestroy).toHaveBeenCalled();
   });
 
-  it("should initialize viewer with default empty content", () => {
+  it("should initialize viewer with default empty content", async () => {
     const { container } = render(MarkdownViewer);
     expect(container.querySelector('[data-testid="markdown-viewer"]')).toBeTruthy();
+
+    const ViewerMock = (await import("@toast-ui/editor/dist/toastui-editor-viewer")).default;
+    await vi.waitFor(() => expect(ViewerMock).toHaveBeenCalledTimes(1));
+    expect(ViewerMock.mock.calls[0][0]).toMatchObject({ initialValue: "" });
+  });
+
+  it("should not create the viewer when unmounted before it finishes loading", async () => {
+    const ViewerMock = (await import("@toast-ui/editor/dist/toastui-editor-viewer")).default;
+    const { unmount } = render(MarkdownViewer, { props: { content: "x" } });
+
+    unmount();
+    await new Promise((r) => setTimeout(r, 20));
+
+    expect(ViewerMock).not.toHaveBeenCalled();
+    expect(mockDestroy).not.toHaveBeenCalled();
   });
 
   it("should handle unmount when viewer fails to initialize", async () => {
@@ -50,6 +70,11 @@ describe("MarkdownViewer", () => {
       throw new Error("Viewer initialization failed");
     });
     const { unmount } = render(MarkdownViewer, { props: { content: "test" } });
+
+    // Tunggu sampai percobaan inisialisasi (yang gagal) benar-benar terjadi
+    await vi.waitFor(() => expect(ViewerMock).toHaveBeenCalledTimes(1));
+
     unmount();
+    expect(mockDestroy).not.toHaveBeenCalled();
   });
 });

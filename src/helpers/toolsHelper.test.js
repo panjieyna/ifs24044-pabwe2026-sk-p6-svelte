@@ -85,4 +85,21 @@ describe("toolsHelper", () => {
     expect(formatted).toBeTruthy();
     expect(typeof formatted).toBe("string");
   });
+
+  it("should format dates in Indonesian locale and keep the same output as toLocaleString", () => {
+    const iso = "2026-10-14T03:24:00.000000Z";
+    const expected = new Date(iso).toLocaleString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    expect(formatDate(iso)).toBe(expected);
+    expect(formatDate(iso)).toContain("Oktober");
+  });
+
+  it("should return Invalid Date instead of throwing for an unparsable date", () => {
+    expect(formatDate("bukan-tanggal")).toBe("Invalid Date");
+  });
 });

@@ -90,6 +90,7 @@
 
 {#if !profile || !linkTree}
   <div class="flex flex-col items-center justify-center py-20">
+    <h1 class="sr-only">Memuat detail link tree</h1>
     <div class="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
   </div>
 {:else}
@@ -180,7 +181,7 @@
             {linkTree.title}
           </h1>
 
-          <div class="flex items-center gap-4 mt-3 text-xs text-slate-500 flex-wrap">
+          <div class="flex items-center gap-4 mt-3 text-xs text-slate-600 flex-wrap">
             <div class="flex items-center gap-2">
               {#if linkTree.author?.photo}
                 <img
@@ -198,7 +199,7 @@
               </span>
             </div>
 
-            <div class="flex items-center gap-1 text-slate-400">
+            <div class="flex items-center gap-1 text-slate-600">
               <Calendar size={14} />
               <span>Dibuat: {formatDate(linkTree.created_at)}</span>
             </div>
@@ -207,7 +208,7 @@
 
         <!-- Description Viewer -->
         <div class="pt-4 border-t border-slate-100">
-          <p class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Deskripsi</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Deskripsi</p>
           <MarkdownViewer content={linkTree.description || ""} />
         </div>
 
@@ -236,10 +237,10 @@
 
           {#if !linkTree.items || linkTree.items.length === 0}
             <div class="text-center py-10 px-4 bg-slate-50/70 rounded-2xl border border-dashed border-slate-200">
-              <Link2 size={24} class="mx-auto text-slate-400 mb-2" />
+              <Link2 size={24} class="mx-auto text-slate-600 mb-2" />
               <p class="text-sm font-semibold text-slate-600">Belum ada tautan ditambahkan</p>
               {#if isOwner}
-                <p class="text-xs text-slate-400 mt-0.5">Klik tombol di atas untuk menambahkan tautan pertama Anda.</p>
+                <p class="text-xs text-slate-600 mt-0.5">Klik tombol di atas untuk menambahkan tautan pertama Anda.</p>
               {/if}
             </div>
           {:else}
@@ -261,9 +262,9 @@
                         class="text-sm font-bold text-slate-800 hover:text-indigo-600 flex items-center gap-1.5 transition-colors truncate"
                       >
                         <span class="truncate">{item.title}</span>
-                        <ExternalLink size={13} class="text-slate-400 shrink-0" />
+                        <ExternalLink size={13} class="text-slate-600 shrink-0" />
                       </a>
-                      <p class="text-xs text-slate-400 truncate mt-0.5">{item.url}</p>
+                      <p class="text-xs text-slate-600 truncate mt-0.5">{item.url}</p>
                     </div>
                   </div>
 

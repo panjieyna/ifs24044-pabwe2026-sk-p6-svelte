@@ -58,13 +58,19 @@ export function showConfirmDialog(message) {
   });
 }
 
+// Formatter dibuat sekali lalu dipakai ulang: membuat Intl.DateTimeFormat baru
+// untuk setiap kartu sangat mahal saat daftar berisi banyak data.
+const dateFormatter = new Intl.DateTimeFormat("id-ID", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 export function formatDate(date) {
   if (!date) return "-";
-  return new Date(date).toLocaleString("id-ID", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return "Invalid Date";
+  return dateFormatter.format(parsed);
 }

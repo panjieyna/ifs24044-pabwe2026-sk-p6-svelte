@@ -110,4 +110,45 @@ describe("UsersPage", () => {
 
     expect(wrapper.text()).not.toContain("Memuat daftar pengguna...");
   });
+  it("should show users in batches and reveal the rest with the show more button", async () => {
+    vi.spyOn(usersStore, "asyncSetUsers").mockImplementation(() => Promise.resolve());
+    const manyUsers = Array.from({ length: 60 }, (_, i) => ({
+      id: i + 1,
+      name: `User ${i + 1}`,
+      email: `user${i + 1}@delcom.org`,
+      photo: null,
+      created_at: "2024-10-05T03:18:14.000000Z",
+    }));
+
+    const { wrapper } = renderWithProviders(UsersPage, {
+      preloadedState: { users: manyUsers },
+    });
+    await new Promise((r) => setTimeout(r, 10));
+
+    // Total tetap menampilkan seluruh jumlah pengguna, kartu hanya sebagian
+    expect(wrapper.text()).toContain("Total: 60 Pengguna");
+    expect(wrapper.findAll('[data-testid^="user-card-"]').length).toBe(24);
+    const showMore = wrapper.find('[data-testid="show-more-users-btn"]');
+    expect(showMore.exists()).toBe(true);
+    expect(showMore.text()).toContain("36 lagi");
+
+    await showMore.trigger("click");
+    expect(wrapper.findAll('[data-testid^="user-card-"]').length).toBe(48);
+    expect(wrapper.find('[data-testid="show-more-users-btn"]').text()).toContain("12 lagi");
+
+    await wrapper.find('[data-testid="show-more-users-btn"]').trigger("click");
+    expect(wrapper.findAll('[data-testid^="user-card-"]').length).toBe(60);
+    expect(wrapper.find('[data-testid="show-more-users-btn"]').exists()).toBe(false);
+  });
+
+  it("should not show the show more button when all users fit in one batch", async () => {
+    vi.spyOn(usersStore, "asyncSetUsers").mockImplementation(() => Promise.resolve());
+    const { wrapper } = renderWithProviders(UsersPage, {
+      preloadedState: { users: mockUsers },
+    });
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(wrapper.findAll('[data-testid^="user-card-"]').length).toBe(3);
+    expect(wrapper.find('[data-testid="show-more-users-btn"]').exists()).toBe(false);
+  });
 });

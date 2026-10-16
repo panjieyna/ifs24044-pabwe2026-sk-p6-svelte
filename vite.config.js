@@ -4,6 +4,33 @@ import { svelteTesting } from "@testing-library/svelte/vite";
 import tailwindcss from "@tailwindcss/vite";
 import process from "process";
 
+// Menyisipkan CSS hasil build langsung ke index.html agar tidak ada
+// stylesheet yang memblokir render pertama (FCP/LCP lebih cepat).
+function inlineCssPlugin() {
+  return {
+    name: "inline-css-into-html",
+    enforce: "post",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler(html, ctx) {
+        const bundle = ctx?.bundle;
+        if (!bundle) return html;
+        return html.replace(
+          /<link rel="stylesheet"[^>]*href="([^"]+\.css)"[^>]*>/g,
+          (tag, href) => {
+            const fileName = href.replace(/^\//, "");
+            const asset = bundle[fileName];
+            if (!asset || asset.type !== "asset") return tag;
+            delete bundle[fileName];
+            return `<style>${asset.source}</style>`;
+          }
+        );
+      },
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
@@ -13,6 +40,7 @@ export default defineConfig(({ mode }) => {
         prebundleSvelteLibraries: false,
       }),
       tailwindcss(),
+      inlineCssPlugin(),
       svelteTesting(),
     ],
     server: {
@@ -22,6 +50,8 @@ export default defineConfig(({ mode }) => {
       port: Number(env.APP_PORT) || 3004,
     },
     build: {
+      target: "es2022",
+      sourcemap: true,
       chunkSizeWarningLimit: 1500,
     },
     define: {

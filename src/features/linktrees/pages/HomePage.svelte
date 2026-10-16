@@ -99,7 +99,7 @@
         <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Daftar Link Tree
         </h1>
-        <p class="text-sm text-slate-500 mt-1">
+        <p class="text-sm text-slate-600 mt-1">
           Kelola dan bagikan halaman kumpulan tautan penting Anda ke publik.
         </p>
       </div>
@@ -108,7 +108,7 @@
           type="button"
           data-testid="delete-all-btn"
           on:click={handleDeleteAllLinkTrees}
-          class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-red-600 bg-red-50 hover:bg-red-100 border border-red-200/60 transition-all"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-red-700 bg-red-50 hover:bg-red-100 border border-red-200/60 transition-all"
         >
           <Trash2 size={16} />
           <span>Hapus Semua</span>
@@ -129,7 +129,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div class="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Ditampilkan</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-600">Total Ditampilkan</p>
           <p class="text-2xl font-black text-slate-800 mt-1">{totalCount}</p>
         </div>
         <div class="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -139,7 +139,7 @@
 
       <div class="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Milik Saya</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-600">Milik Saya</p>
           <p class="text-2xl font-black text-indigo-600 mt-1">{myCount}</p>
         </div>
         <div class="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -149,7 +149,7 @@
 
       <div class="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
         <div>
-          <p class="text-xs font-bold uppercase tracking-wider text-slate-400">Tipe Publik</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-slate-600">Tipe Publik</p>
           <p class="text-2xl font-black text-emerald-600 mt-1">{publicCount}</p>
         </div>
         <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -161,7 +161,7 @@
     <!-- Filters & Search Toolbar -->
     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
       <div class="relative flex-1 max-w-md">
-        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-600">
           <Search size={18} />
         </div>
         <input
@@ -169,15 +169,16 @@
           data-testid="search-input"
           bind:value={searchQuery}
           placeholder="Cari judul, deskripsi, atau pembuat..."
-          class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all text-sm shadow-xs"
+          class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all text-sm shadow-xs"
         />
       </div>
 
       <!-- Filter Milik Saya / Semua -->
       <div class="flex items-center gap-2">
-        <Funnel size={16} class="text-slate-400 shrink-0 hidden sm:block" />
+        <Funnel size={16} class="text-slate-600 shrink-0 hidden sm:block" />
         <select
           data-testid="filter-is-me-select"
+          aria-label="Filter kepemilikan link tree"
           bind:value={filterIsMe}
           class="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all shadow-xs"
         >
@@ -191,15 +192,15 @@
     {#if loadingLinkTrees}
       <div class="flex flex-col items-center justify-center py-20">
         <LoaderCircle size={32} class="animate-spin text-indigo-600" />
-        <p class="text-sm text-slate-500 mt-2">Memuat daftar link tree...</p>
+        <p class="text-sm text-slate-600 mt-2">Memuat daftar link tree...</p>
       </div>
     {:else if filteredLinkTrees.length === 0}
       <div class="text-center py-16 px-4 bg-white rounded-3xl border border-slate-200/80 shadow-xs">
         <div class="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
           <Link2 size={26} />
         </div>
-        <h3 class="text-base font-bold text-slate-800">Tidak ada link tree ditemukan</h3>
-        <p class="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+        <h2 class="text-base font-bold text-slate-800">Tidak ada link tree ditemukan</h2>
+        <p class="text-sm text-slate-600 mt-1 max-w-sm mx-auto">
           {searchQuery ? 'Coba ubah kata kunci pencarian Anda.' : 'Mulai dengan menambahkan link tree baru.'}
         </p>
       </div>
@@ -253,16 +254,16 @@
             <!-- Card Content Body -->
             <div class="p-5 flex-1 flex flex-col justify-between">
               <div>
-                <h3 class="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                <h2 class="text-lg font-bold text-slate-800 line-clamp-1 group-hover:text-indigo-600 transition-colors">
                   {lt.title}
-                </h3>
-                <p class="text-xs text-slate-500 mt-1 line-clamp-2">
+                </h2>
+                <p class="text-xs text-slate-600 mt-1 line-clamp-2">
                   {lt.description || "Tidak ada deskripsi"}
                 </p>
               </div>
 
               <!-- Author & Date -->
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
                 <div class="flex items-center gap-2">
                   {#if lt.author?.photo}
                     <img

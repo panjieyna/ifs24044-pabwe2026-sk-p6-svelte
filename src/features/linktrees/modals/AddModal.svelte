@@ -73,8 +73,8 @@
           <Plus size={18} strokeWidth={2.5} />
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800">Tambah Link Tree Baru</h3>
-          <p class="text-xs text-slate-500">
+          <h2 class="text-base font-bold text-slate-800">Tambah Link Tree Baru</h2>
+          <p class="text-xs text-slate-600">
             Buat kumpulan tautan baru dan tuliskan detailnya dengan format Markdown
           </p>
         </div>
@@ -83,7 +83,7 @@
         type="button"
         data-testid="close-add-modal-btn"
         on:click={handleClose}
-        class="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
+        class="p-2 rounded-xl text-slate-600 hover:text-slate-600 hover:bg-slate-200/60 transition-colors"
       >
         <X size={20} />
       </button>
@@ -109,7 +109,7 @@
               data-testid="add-linktree-title-input"
               bind:value={title}
               placeholder="Contoh: Media Sosial & Portofolio Saya"
-              class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all text-sm shadow-xs"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all text-sm shadow-xs"
               required
             />
           </div>
